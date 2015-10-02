@@ -1,24 +1,21 @@
-﻿<div class="jumbotron">
-    <h1>ASP.NET</h1>
-    <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS, and JavaScript.</p>
-    <p><a href="http://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
-</div>
-<div class="row">
+﻿<div class="row">
     <div class="col-md-4">
-        <h2>Getting started</h2>
-        <p>ASP.NET Web API is a framework that makes it easy to build HTTP services that reach
-        a broad range of clients, including browsers and mobile devices. ASP.NET Web API
-        is an ideal platform for building RESTful applications on the .NET Framework.</p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301870">Learn more &raquo;</a></p>
+        <h2>1. Single call.</h2>
+        <p>A</p>
+        <p>@Html.ActionLink("Run", "Index", "Home", new {method = 1}, null)</p>
     </div>
     <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301871">Learn more &raquo;</a></p>
+        <h2>2. Single extra intrnal call</h2>
+        <p>B -> A</p>
+        <p>@Html.ActionLink("Run", "Index", "Home", new {method = 2}, null)</p>
     </div>
     <div class="col-md-4">
-        <h2>Web Hosting</h2>
-        <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
-        <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301872">Learn more &raquo;</a></p>
+        <h2>3. Multiple internal calls</h2>
+        <p>C -> (B -> A) | (A)</p>
+        <p>@Html.ActionLink("Run", "Index", "Home", new { method = 3}, null)</p>
+    </div>
+    <div class="col-md-4">
+        <h2>Result</h2>
+        <p>@ViewBag.Result</p>
     </div>
 </div>
