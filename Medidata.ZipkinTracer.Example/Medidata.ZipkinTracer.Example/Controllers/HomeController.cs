@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Web;
 using System.Web.Mvc;
 using Medidata.ZipkinTracer.Core;
@@ -39,35 +40,49 @@ namespace Medidata.ZipkinTracer.Example.Controllers
 
         public string A()
         {
+            var a = System.Web.HttpContext.Current.Request.Headers;
+            
             return "a";
         }
 
         public string B()
         {
             var url =  Url.Action("A", "Home", null, protocol: Request.Url.Scheme);
-            var tracer = (ITracerClient)System.Web.HttpContext.Current.Items["zipkinClient"];
-            var uri = new Uri(url);
-            var span = tracer.StartClientTrace(uri, "B->A");
-            var result = new HttpClient().GetAsync(url).Result.Content.ReadAsStringAsync().Result;
-            tracer.EndClientTrace(span);
+            var result = httpCall(url, "B->A");
             return "b -> " + result;
         }
 
         public string C()
         {
             var url1 = Url.Action("B", "Home", null, protocol: Request.Url.Scheme);
-            var tracer = (ITracerClient)System.Web.HttpContext.Current.Items["zipkinClient"];
-            var uri1 = new Uri(url1);
-            var span1 = tracer.StartClientTrace(uri1, "C->B");
-            var result1 = new HttpClient().GetAsync(url1).Result.Content.ReadAsStringAsync().Result;
-            tracer.EndClientTrace(span1);
+            var result1 = httpCall(url1, "C->B");
 
             var url2 = Url.Action("A", "Home", null, protocol: Request.Url.Scheme);
-            var uri2 = new Uri(url2);
-            var span2 = tracer.StartClientTrace(uri2, "C->A");
-            var result2 = new HttpClient().GetAsync(url2).Result.Content.ReadAsStringAsync().Result;
-            tracer.EndClientTrace(span2);
+            var result2 = httpCall(url2, "C->A");
+
             return "c -> (" + result1 + ") | (" + result2 + ")";
+        }
+
+        private string httpCall(string url, string methodName)
+        {
+            using (var client = new HttpClient())
+            {
+                var tracer = (ITracerClient)System.Web.HttpContext.Current.Items["zipkinClient"];
+                var span = tracer.StartClientTrace(new Uri(url), methodName);
+
+                client.DefaultRequestHeaders.Add("X-B3-TraceId", toBitString(span.Trace_id));
+                client.DefaultRequestHeaders.Add("X-B3-ParentSpanId", toBitString(span.Parent_id));
+                client.DefaultRequestHeaders.Add("X-B3-SpanId", toBitString(span.Id));
+
+                tracer.EndClientTrace(span);
+
+                return client.GetAsync(url).Result.Content.ReadAsStringAsync().Result;
+            }
+        }
+
+        private string toBitString(long id)
+        {
+            return Convert.ToString(id, 16);
         }
     }
 }
